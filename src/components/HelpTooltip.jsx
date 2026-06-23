@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 
-export default function HelpTooltip({ text }) {
+export default function HelpTooltip({ text, align = 'center' }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -26,7 +26,7 @@ export default function HelpTooltip({ text }) {
       >
         ?
       </button>
-      {open && <span className="help-popup">{text}</span>}
+      {open && <span className={`help-popup help-popup-${align}`}>{text}</span>}
     </span>
   );
 }

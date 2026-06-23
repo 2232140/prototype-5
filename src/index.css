@@ -1478,6 +1478,17 @@ button {
   border-bottom: 5px solid #2D3142;
 }
 
+.help-popup-right {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+.help-popup-right::before {
+  left: auto;
+  right: 10px;
+  transform: none;
+}
+
 /* ===== USAGE GUIDE (Settings) ===== */
 .guide-toggle {
   width: 100%;

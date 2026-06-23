@@ -307,7 +307,7 @@ export default function History() {
           <button className={`tab-btn ${view === 'chart'    ? 'active' : ''}`} onClick={() => setView('chart')}>📈 グラフ</button>
           <button className={`tab-btn ${view === 'calendar' ? 'active' : ''}`} onClick={() => setView('calendar')}>📅 カレンダー</button>
           <button className={`tab-btn ${view === 'records'  ? 'active' : ''}`} onClick={() => setView('records')}>📝 記録</button>
-          <HelpTooltip text="グラフ：気分・体調の推移を折れ線・棒グラフで確認。カレンダー：日ごとの記録を月ビューで表示。記録：メモと手紙の一覧。" />
+          <HelpTooltip text="グラフ：気分・体調の推移を折れ線・棒グラフで確認。カレンダー：日ごとの記録を月ビューで表示。記録：メモと手紙の一覧。" align="right" />
         </div>
 
         {view === 'chart' && (
