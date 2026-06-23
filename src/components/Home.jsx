@@ -5,13 +5,17 @@ import {
   getWeeklySummary, MOOD_OPTIONS, ENERGY_OPTIONS,
 } from '../utils/analysis';
 import { getAIAdvice } from '../utils/aiAdvice';
+import HelpTooltip from './HelpTooltip';
 
-function Collapsible({ title, children }) {
+function Collapsible({ title, helpText, children }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="card collapsible-section">
       <button className="collapsible-toggle" onClick={() => setOpen(o => !o)}>
-        <span>{title}</span>
+        <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+          {title}
+          {helpText && <HelpTooltip text={helpText} />}
+        </span>
         <span className={`collapsible-chevron${open ? ' open' : ''}`}>›</span>
       </button>
       {open && <div className="collapsible-body">{children}</div>}
@@ -161,7 +165,10 @@ export default function Home({ onNavigate, providerToken = null }) {
         <p className="state-advice">💡 {state.advice}</p>
         <div className="ai-advice-section">
           <div className="divider" />
-          <span className="ai-advice-label">💬 AIに相談する</span>
+          <span className="ai-advice-label">
+            💬 AIに相談する
+            <HelpTooltip text="気分・体調の記録をもとに、AIがあなたの状態に合ったアドバイスをしてくれます。気になることをひとこと入力すると、より具体的なアドバイスが得られます。" />
+          </span>
           <input
             className="today-note-input"
             type="text"
@@ -232,7 +239,7 @@ export default function Home({ onNavigate, providerToken = null }) {
         );
       })()}
 
-      <Collapsible title="💌 未来の自分への手紙">
+      <Collapsible title="💌 未来の自分への手紙" helpText="調子のいい日に、つらい日の自分へメッセージを書き残しておけます。落ち込んだ日に、過去の自分からの手紙が届きます。">
         {wroteLetterToday() || letterSent ? (
           <p className="letter-sent-msg">✅ 今日の手紙はもう届いています。また明日！</p>
         ) : (
@@ -279,7 +286,7 @@ export default function Home({ onNavigate, providerToken = null }) {
       </div>
 
       {/* ⑦ 深呼吸エクササイズ（折りたたみ） */}
-      <Collapsible title="🫁 深呼吸エクササイズ（4-7-8）">
+      <Collapsible title="🫁 深呼吸エクササイズ（4-7-8）" helpText="ストレス解消に効果的な4-7-8呼吸法を練習できます。「吸う4秒 → 止める7秒 → 吐く8秒」を3回繰り返すだけで、気持ちが落ち着きます。">
         <p className="card-desc" style={{ marginBottom: 12 }}>
           ストレスを感じたら試してみましょう。吸う4秒→止める7秒→吐く8秒を3回繰り返します。
         </p>

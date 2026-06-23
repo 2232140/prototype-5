@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { saveEntry, getTodayEntry } from '../utils/storage';
 import { MOOD_OPTIONS, ENERGY_OPTIONS } from '../utils/analysis';
+import HelpTooltip from './HelpTooltip';
 
 const MESSAGES = [
   '記録してくれてありがとう！\nあなたのことを、ちゃんと知っていけるね。🌱',
@@ -99,7 +100,10 @@ export default function CheckIn({ onNavigate }) {
       ) : (
         <>
           <div className="checkin-header">
-            <h1 className="checkin-title">今日の記録</h1>
+            <h1 className="checkin-title" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              今日の記録
+              <HelpTooltip text="毎日の気分と体調を1〜5のスライダーで記録します。一言メモも残せます。記録が続くと、グラフで変化を振り返れます。" />
+            </h1>
           </div>
 
           <div className="checkin-sliders">

@@ -2,6 +2,42 @@ import React, { useState, useEffect } from 'react';
 import { getSettingsWithDefaults, saveSettings } from '../utils/storage';
 import { supabase } from '../utils/supabase';
 import PageHeader from './PageHeader';
+import HelpTooltip from './HelpTooltip';
+
+const GUIDE_ITEMS = [
+  { icon: '✏️', title: '今日の記録（チェックイン）', desc: '毎日の気分と体調を1〜5のスライダーで記録します。一言メモも添えられます。' },
+  { icon: '🤖', title: 'AIに相談する', desc: 'ホーム画面から、記録データをもとにAIがパーソナライズされたアドバイスをしてくれます。気になることを入力するとより具体的な回答が得られます。' },
+  { icon: '🔥', title: '連続記録', desc: '毎日記録を続けた日数が表示されます。継続のモチベーションアップに活用しましょう。' },
+  { icon: '💌', title: '未来の自分への手紙', desc: '調子のいい日に、つらい日の自分へメッセージを書き残せます。落ち込んだ日に過去の自分からの手紙が届きます。' },
+  { icon: '🫁', title: '深呼吸エクササイズ', desc: 'ストレス解消に効果的な4-7-8呼吸法（吸う4秒→止める7秒→吐く8秒）を3回練習できます。' },
+  { icon: '📊', title: '履歴・グラフ', desc: '過去の気分・体調の変化をグラフ、カレンダー、記録一覧の3つの形式で振り返れます。' },
+  { icon: '🔔', title: 'リマインダー通知', desc: '指定した時刻に「記録を促す通知」を受け取れます。ブラウザの通知を許可する必要があります。' },
+];
+
+function UsageGuide() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="card">
+      <button className="guide-toggle" onClick={() => setOpen(o => !o)}>
+        <span>📖 使い方の説明</span>
+        <span className={`guide-chevron${open ? ' open' : ''}`}>›</span>
+      </button>
+      {open && (
+        <div className="guide-list">
+          {GUIDE_ITEMS.map((item) => (
+            <div key={item.title} className="guide-item">
+              <span className="guide-icon">{item.icon}</span>
+              <div>
+                <div className="guide-item-title">{item.title}</div>
+                <div className="guide-item-desc">{item.desc}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function Settings({ user }) {
   const [s, setS]       = useState({ name: '', notificationTime: '21:00', notificationEnabled: false });
@@ -79,8 +115,13 @@ export default function Settings({ user }) {
         />
       </div>
 
+      <UsageGuide />
+
       <div className="card">
-        <h2 className="card-section-title">🔔 リマインダー</h2>
+        <h2 className="card-section-title" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          🔔 リマインダー
+          <HelpTooltip text="指定した時刻に記録を促す通知を受け取れます。アプリを開いているときだけ通知されます。まず「通知を許可する」を押してください。" />
+        </h2>
         <label className="form-label">通知時刻</label>
         <input
           type="time"

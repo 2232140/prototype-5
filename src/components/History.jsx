@@ -3,6 +3,7 @@ import { getEntries } from '../utils/storage';
 import { getLetters, updateLetter, deleteLetter } from '../utils/storage';
 import { getLast7Days, MOOD_OPTIONS, ENERGY_OPTIONS, calculateImprovement } from '../utils/analysis';
 import PageHeader from './PageHeader';
+import HelpTooltip from './HelpTooltip';
 
 /* ---------- Bar Chart (7日間) ---------- */
 function BarChart({ days, metric }) {
@@ -302,10 +303,11 @@ export default function History() {
       <PageHeader title="履歴" subtitle="記録の振り返り" emoji="📊" />
 
       <div className="card" style={{ marginTop: 20 }}>
-        <div className="tab-row">
+        <div className="tab-row" style={{ alignItems: 'center' }}>
           <button className={`tab-btn ${view === 'chart'    ? 'active' : ''}`} onClick={() => setView('chart')}>📈 グラフ</button>
           <button className={`tab-btn ${view === 'calendar' ? 'active' : ''}`} onClick={() => setView('calendar')}>📅 カレンダー</button>
           <button className={`tab-btn ${view === 'records'  ? 'active' : ''}`} onClick={() => setView('records')}>📝 記録</button>
+          <HelpTooltip text="グラフ：気分・体調の推移を折れ線・棒グラフで確認。カレンダー：日ごとの記録を月ビューで表示。記録：メモと手紙の一覧。" />
         </div>
 
         {view === 'chart' && (

@@ -1416,3 +1416,122 @@ button {
 }
 .snap-btn:active  { transform: scale(0.9); }
 .snap-btn.active  { transform: scale(1.08); }
+
+/* ===== HELP TOOLTIP ===== */
+.help-tooltip-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+
+.help-btn {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1.5px solid var(--primary-s);
+  background: transparent;
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.help-btn:hover { background: #EDE9F9; }
+
+.help-popup {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #2D3142;
+  color: #fff;
+  font-size: 12px;
+  line-height: 1.65;
+  padding: 10px 14px;
+  border-radius: 10px;
+  width: 220px;
+  z-index: 300;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+  pointer-events: none;
+  white-space: normal;
+  text-align: left;
+  font-weight: 400;
+}
+
+.help-popup::before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 5px solid #2D3142;
+}
+
+/* ===== USAGE GUIDE (Settings) ===== */
+.guide-toggle {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+}
+
+.guide-chevron {
+  font-size: 20px;
+  color: var(--sub);
+  transition: transform 0.2s;
+  display: inline-block;
+  line-height: 1;
+}
+.guide-chevron.open { transform: rotate(90deg); }
+
+.guide-list {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  animation: fadeUp 0.2s ease;
+}
+
+.guide-item {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.guide-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.guide-item-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 3px;
+}
+
+.guide-item-desc {
+  font-size: 12px;
+  color: var(--sub);
+  line-height: 1.65;
+}
