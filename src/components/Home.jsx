@@ -5,8 +5,7 @@ import {
 } from '../utils/storage';
 import {
   analyzeState, getStreak, calculateImprovement, getDailyTip,
-  getWeeklySummary, MOOD_OPTIONS, ENERGY_OPTIONS,
-  getLast28Days, getLast7DaysScatter,
+  getWeeklySummary, MOOD_OPTIONS, ENERGY_OPTIONS, getLast7DaysScatter,
 } from '../utils/analysis';
 import { getAIAdvice } from '../utils/aiAdvice';
 import HelpTooltip from './HelpTooltip';
@@ -76,51 +75,6 @@ function QuadrantMap({ scatter }) {
   );
 }
 
-const WEEK_LABELS = ['4週前', '3週前', '先週', '今週'];
-
-function MindGrid({ days28 }) {
-  const weeks = WEEK_LABELS.map((label, wi) => ({
-    label,
-    days: days28.slice(wi * 7, wi * 7 + 7),
-  }));
-
-  return (
-    <div className="mind-grid-wrap">
-      {weeks.map((week, wi) => (
-        <div key={wi} className="mind-week-row">
-          <span className="mind-week-label">{week.label}</span>
-          <div className="mind-week-cells">
-            {week.days.map((day, di) => {
-              const color = day.entry
-                ? MOOD_OPTIONS[Math.min(4, Math.max(0, Math.round(day.entry.mood) - 1))]?.color
-                : null;
-              return (
-                <div
-                  key={di}
-                  className={`grid-cell${day.entry ? ' grid-has' : ''}${day.isToday ? ' grid-today' : ''}`}
-                  style={color ? { background: color + '99', borderColor: color } : {}}
-                />
-              );
-            })}
-          </div>
-        </div>
-      ))}
-      <div className="mind-legend">
-        <div className="mind-legend-cell" />
-        <span className="mind-legend-text">未記録</span>
-        <span className="mind-legend-spacer" />
-        {MOOD_OPTIONS.map(o => (
-          <div
-            key={o.value}
-            className="mind-legend-cell"
-            style={{ background: o.color + '99', borderColor: o.color }}
-          />
-        ))}
-        <span className="mind-legend-text">気分 低→高</span>
-      </div>
-    </div>
-  );
-}
 
 export default function Home({ onNavigate, providerToken = null }) {
   const [entries, setEntries]         = useState([]);
@@ -198,7 +152,6 @@ export default function Home({ onNavigate, providerToken = null }) {
   const tip           = getDailyTip();
   const weeklySummary = getWeeklySummary(entries);
   const scatter       = getLast7DaysScatter(entries);
-  const days28        = getLast28Days(entries);
   const now           = new Date();
   const hour          = now.getHours();
   const greeting      = hour < 12 ? 'おはようございます' : hour < 17 ? 'こんにちは' : 'こんばんは';
@@ -393,19 +346,10 @@ export default function Home({ onNavigate, providerToken = null }) {
       {entries.length > 0 && (
         <div className="card">
           <h2 className="card-section-title" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-            📊 最近の状態
-            <HelpTooltip text="直近7日間の気分（縦軸）と体調（横軸）の相関を4つのゾーンで表示しています。ドットが多いゾーンほど、その状態でいた日が多かったことを示します。右側の28日グリッドは記録した日を気分の色で表示しています。" />
+            📊 最近の状態（直近7日）
+            <HelpTooltip text="直近7日間の気分（縦軸）と体調（横軸）の相関を4つのゾーンで表示しています。ドットが右上の「絶好調」に近いほど好調な日、左下の「要注意」に近いほどつらい日を表しています。" />
           </h2>
-          <div className="viz-row">
-            <div className="viz-half">
-              <p className="viz-sub-title">心と体のバランス（直近7日）</p>
-              <QuadrantMap scatter={scatter} />
-            </div>
-            <div className="viz-half">
-              <p className="viz-sub-title">ここ28日の記録</p>
-              <MindGrid days28={days28} />
-            </div>
-          </div>
+          <QuadrantMap scatter={scatter} />
         </div>
       )}
 
