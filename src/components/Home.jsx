@@ -27,37 +27,49 @@ function Collapsible({ title, helpText, children }) {
   );
 }
 
-function DotMap({ scatter }) {
-  const cells = [];
-  for (let ri = 0; ri < 5; ri++) {
-    for (let ci = 0; ci < 5; ci++) {
-      const mood   = 5 - ri;
-      const energy = ci + 1;
-      const pts    = scatter.filter(s => s.mood === mood && s.energy === energy);
-      cells.push({
-        key: `${ri}-${ci}`,
-        count: pts.length,
-        isToday: pts.some(p => p.isToday),
-        color: pts.length > 0 ? MOOD_OPTIONS[mood - 1].color : null,
-      });
-    }
+const QUAD_INFO = [
+  { label: '心は元気',   emoji: '😊', bg: '#F0FDF4', color: '#166534' },
+  { label: '絶好調',     emoji: '🌟', bg: '#F0FDFA', color: '#065F46' },
+  { label: '要注意',     emoji: '😔', bg: '#FFF5F5', color: '#991B1B' },
+  { label: '体は動ける', emoji: '💪', bg: '#FFFBEB', color: '#92400E' },
+];
+
+function QuadrantMap({ scatter }) {
+  if (scatter.length === 0) {
+    return <p className="viz-empty-hint">記録が増えると表示されます</p>;
   }
   return (
-    <div className="dot-map-wrap">
-      <span className="dot-map-y-label">気分</span>
-      <div className="dot-map-inner">
-        <div className="dot-map-grid">
-          {cells.map(cell => (
+    <div className="quadrant-outer">
+      <div className="quadrant-map">
+        {QUAD_INFO.map((q, i) => (
+          <div key={i} className="quad" style={{ background: q.bg }}>
+            <span className="quad-label" style={{ color: q.color }}>
+              {q.emoji}<br />{q.label}
+            </span>
+          </div>
+        ))}
+        {scatter.map((pt, i) => {
+          const x      = Math.min(94, Math.max(6, ((pt.energy - 1) / 4) * 100));
+          const y      = Math.min(94, Math.max(6, (1 - (pt.mood - 1) / 4) * 100));
+          const moodIdx = Math.min(4, Math.max(0, Math.round(pt.mood) - 1));
+          const color   = MOOD_OPTIONS[moodIdx].color;
+          return (
             <div
-              key={cell.key}
-              className={`dot-cell${cell.count > 0 ? ' filled' : ''}${cell.isToday ? ' today-dot' : ''}`}
-              style={cell.color ? { background: cell.color + 'BB', borderColor: cell.color } : {}}
-            >
-              {cell.count > 1 && <span className="dot-count">{cell.count}</span>}
-            </div>
-          ))}
-        </div>
-        <div className="dot-map-x-label">体調→</div>
+              key={i}
+              className={`quad-dot${pt.isToday ? ' today' : ''}`}
+              style={{
+                left: `${x}%`,
+                top:  `${y}%`,
+                background: color,
+                boxShadow: pt.isToday ? `0 0 0 3px ${color}55` : undefined,
+              }}
+            />
+          );
+        })}
+      </div>
+      <div className="quad-axis-row">
+        <span>体調 低</span>
+        <span>体調 高</span>
       </div>
     </div>
   );
@@ -353,12 +365,8 @@ export default function Home({ onNavigate, providerToken = null }) {
           <h2 className="card-section-title">📊 最近の状態</h2>
           <div className="viz-row">
             <div className="viz-half">
-              <p className="viz-sub-title">心と体のバランス（7日）</p>
-              {scatter.length === 0 ? (
-                <p className="viz-empty-hint">記録が増えると表示されます</p>
-              ) : (
-                <DotMap scatter={scatter} />
-              )}
+              <p className="viz-sub-title">心と体のバランス（↑気分 / →体調）</p>
+              <QuadrantMap scatter={scatter} />
             </div>
             <div className="viz-half">
               <p className="viz-sub-title">ここ28日の記録</p>

@@ -1647,61 +1647,66 @@ button {
   letter-spacing: 0.03em;
 }
 
-/* Dot Map */
-.dot-map-wrap {
-  display: flex;
-  gap: 3px;
-  align-items: center;
-}
+/* Quadrant Map */
+.quadrant-outer { width: 100%; }
 
-.dot-map-y-label {
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--sub);
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  letter-spacing: 0.06em;
-  flex-shrink: 0;
-  line-height: 1;
-}
-
-.dot-map-inner { flex: 1; min-width: 0; }
-
-.dot-map-grid {
+.quadrant-map {
+  position: relative;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 3px;
-}
-
-.dot-cell {
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
   aspect-ratio: 1;
-  border-radius: 5px;
+  gap: 1px;
+  background: var(--border);
+  border-radius: 8px;
+  overflow: hidden;
   border: 1.5px solid var(--border);
-  background: #F3F4F6;
+}
+
+.quad {
+  padding: 4px 5px;
   display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
-.dot-cell.today-dot {
-  box-shadow: 0 0 0 2px var(--primary);
-}
+.quad:nth-child(1) { align-items: flex-start; justify-content: flex-start; }
+.quad:nth-child(2) { align-items: flex-start; justify-content: flex-end;   }
+.quad:nth-child(3) { align-items: flex-end;   justify-content: flex-start; }
+.quad:nth-child(4) { align-items: flex-end;   justify-content: flex-end;   }
 
-.dot-count {
+.quad-label {
   font-size: 8px;
-  font-weight: 800;
-  color: #fff;
-  line-height: 1;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
 }
 
-.dot-map-x-label {
+.quad-dot {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+  opacity: 0.85;
+  pointer-events: none;
+  border: 1.5px solid rgba(255,255,255,0.7);
+}
+
+.quad-dot.today {
+  width: 12px;
+  height: 12px;
+  opacity: 1;
+  border-color: #fff;
+}
+
+.quad-axis-row {
+  display: flex;
+  justify-content: space-between;
   font-size: 9px;
   font-weight: 700;
   color: var(--sub);
-  text-align: right;
   margin-top: 3px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
 }
 
 /* Mind Grid */

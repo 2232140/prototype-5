@@ -153,8 +153,8 @@ export const getLast7DaysScatter = (entries) => {
   return getLast7Days(entries)
     .filter(d => d.entry)
     .map(d => ({
-      mood:    Math.round(d.entry.mood),
-      energy:  Math.round(d.entry.energy),
+      mood:    d.entry.mood,
+      energy:  d.entry.energy,
       isToday: d.isToday,
     }));
 };
