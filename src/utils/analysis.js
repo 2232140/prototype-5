@@ -135,6 +135,30 @@ export const getDailyTip = () => {
   return TIPS[day % TIPS.length];
 };
 
+export const getLast28Days = (entries) => {
+  return Array.from({ length: 28 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (27 - i));
+    d.setHours(0, 0, 0, 0);
+    const entry = entries.find(e => {
+      const ed = new Date(e.date + 'T00:00:00');
+      ed.setHours(0, 0, 0, 0);
+      return ed.getTime() === d.getTime();
+    });
+    return { date: d, entry, isToday: i === 27 };
+  });
+};
+
+export const getLast7DaysScatter = (entries) => {
+  return getLast7Days(entries)
+    .filter(d => d.entry)
+    .map(d => ({
+      mood:    Math.round(d.entry.mood),
+      energy:  Math.round(d.entry.energy),
+      isToday: d.isToday,
+    }));
+};
+
 const DAY_NAMES = ['日', '月', '火', '水', '木', '金', '土'];
 
 const entriesInRange = (entries, daysAgoFrom, daysAgoTo) => {

@@ -1546,3 +1546,178 @@ button {
   color: var(--sub);
   line-height: 1.65;
 }
+
+/* ===== QUICK CHECK-IN ===== */
+.quick-checkin-card { padding-bottom: 14px; }
+
+.quick-checkin-label {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.quick-checkin-row {
+  display: flex;
+  gap: 7px;
+  margin-bottom: 8px;
+}
+
+.quick-mood-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  padding: 11px 2px 9px;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  background: #fff;
+  cursor: pointer;
+  transition: transform 0.14s, border-color 0.15s, box-shadow 0.15s;
+}
+
+@media (hover: hover) {
+  .quick-mood-btn:not(:disabled):hover {
+    transform: translateY(-3px);
+    border-color: var(--mood-color);
+    box-shadow: 0 5px 14px rgba(0,0,0,0.1);
+  }
+}
+
+.quick-mood-btn:active { transform: scale(0.88); }
+.quick-mood-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.quick-mood-btn.tapped {
+  transform: scale(1.12);
+  border-color: var(--mood-color);
+  box-shadow: 0 4px 18px rgba(0,0,0,0.14);
+}
+
+.quick-mood-emoji { font-size: 28px; line-height: 1; }
+
+.quick-mood-label {
+  font-size: 9px;
+  color: var(--sub);
+  font-weight: 600;
+  line-height: 1;
+  text-align: center;
+}
+
+.quick-detail-link {
+  display: block;
+  width: 100%;
+  background: none;
+  border: none;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  padding: 4px 0 0;
+  cursor: pointer;
+  opacity: 0.8;
+  transition: opacity 0.15s;
+}
+.quick-detail-link:hover { opacity: 1; }
+
+/* ===== VISUALIZATION CARD (最近の状態) ===== */
+.viz-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.viz-half { flex: 1; min-width: 0; }
+
+.viz-sub-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--sub);
+  text-align: center;
+  margin-bottom: 6px;
+  letter-spacing: 0.03em;
+}
+
+/* Dot Map */
+.dot-map-wrap {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.dot-map-y-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--sub);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  letter-spacing: 0.06em;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.dot-map-inner { flex: 1; min-width: 0; }
+
+.dot-map-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 3px;
+}
+
+.dot-cell {
+  aspect-ratio: 1;
+  border-radius: 5px;
+  border: 1.5px solid var(--border);
+  background: #F3F4F6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dot-cell.today-dot {
+  box-shadow: 0 0 0 2px var(--primary);
+}
+
+.dot-count {
+  font-size: 8px;
+  font-weight: 800;
+  color: #fff;
+  line-height: 1;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.25);
+}
+
+.dot-map-x-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--sub);
+  text-align: right;
+  margin-top: 3px;
+  letter-spacing: 0.04em;
+}
+
+/* Mind Grid */
+.mind-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.grid-cell {
+  aspect-ratio: 1;
+  border-radius: 3px;
+  border: 1.5px solid var(--border);
+  background: #F3F4F6;
+}
+
+.grid-cell.grid-today {
+  box-shadow: 0 0 0 1.5px var(--primary);
+}
+
+.viz-empty-hint {
+  font-size: 10px;
+  color: var(--sub);
+  text-align: center;
+  padding: 14px 0;
+  line-height: 1.5;
+}

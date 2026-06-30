@@ -1,8 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getEntries, getTodayEntry, getSettingsWithDefaults, getLetters, saveLetter, wroteLetterToday } from '../utils/storage';
+import {
+  getEntries, getTodayEntry, getSettingsWithDefaults,
+  getLetters, saveLetter, wroteLetterToday, saveEntry,
+} from '../utils/storage';
 import {
   analyzeState, getStreak, calculateImprovement, getDailyTip,
   getWeeklySummary, MOOD_OPTIONS, ENERGY_OPTIONS,
+  getLast28Days, getLast7DaysScatter,
 } from '../utils/analysis';
 import { getAIAdvice } from '../utils/aiAdvice';
 import HelpTooltip from './HelpTooltip';
@@ -23,6 +27,59 @@ function Collapsible({ title, helpText, children }) {
   );
 }
 
+function DotMap({ scatter }) {
+  const cells = [];
+  for (let ri = 0; ri < 5; ri++) {
+    for (let ci = 0; ci < 5; ci++) {
+      const mood   = 5 - ri;
+      const energy = ci + 1;
+      const pts    = scatter.filter(s => s.mood === mood && s.energy === energy);
+      cells.push({
+        key: `${ri}-${ci}`,
+        count: pts.length,
+        isToday: pts.some(p => p.isToday),
+        color: pts.length > 0 ? MOOD_OPTIONS[mood - 1].color : null,
+      });
+    }
+  }
+  return (
+    <div className="dot-map-wrap">
+      <span className="dot-map-y-label">気分</span>
+      <div className="dot-map-inner">
+        <div className="dot-map-grid">
+          {cells.map(cell => (
+            <div
+              key={cell.key}
+              className={`dot-cell${cell.count > 0 ? ' filled' : ''}${cell.isToday ? ' today-dot' : ''}`}
+              style={cell.color ? { background: cell.color + 'BB', borderColor: cell.color } : {}}
+            >
+              {cell.count > 1 && <span className="dot-count">{cell.count}</span>}
+            </div>
+          ))}
+        </div>
+        <div className="dot-map-x-label">体調→</div>
+      </div>
+    </div>
+  );
+}
+
+function MindGrid({ days28 }) {
+  return (
+    <div className="mind-grid">
+      {days28.map((day, i) => {
+        const color = day.entry ? MOOD_OPTIONS[Math.round(day.entry.mood) - 1]?.color : null;
+        return (
+          <div
+            key={i}
+            className={`grid-cell${day.entry ? ' grid-has' : ''}${day.isToday ? ' grid-today' : ''}`}
+            style={color ? { background: color + '99', borderColor: color } : {}}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 export default function Home({ onNavigate, providerToken = null }) {
   const [entries, setEntries]         = useState([]);
   const [todayEntry, setTodayEntry]   = useState(null);
@@ -37,7 +94,8 @@ export default function Home({ onNavigate, providerToken = null }) {
   const [todayNote, setTodayNote]     = useState('');
   const [letterText, setLetterText]   = useState('');
   const [letterSent, setLetterSent]   = useState(false);
-  const [letterDismissed, setLetterDismissed] = useState(false);
+  const [quickTapped, setQuickTapped] = useState(null);
+  const [quickRipple, setQuickRipple] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -70,11 +128,24 @@ export default function Home({ onNavigate, providerToken = null }) {
     fire();
   }, []);
 
+  const handleQuickCheckin = async (value) => {
+    setQuickTapped(value);
+    setQuickRipple(true);
+    await saveEntry({ mood: value, energy: value, memo: '' });
+    const [newEntry, newEntries] = await Promise.all([getTodayEntry(), getEntries()]);
+    setTodayEntry(newEntry);
+    setEntries(newEntries);
+    setQuickRipple(false);
+    setQuickTapped(null);
+  };
+
   const state         = analyzeState(entries);
   const streak        = getStreak(entries);
   const improve       = calculateImprovement(entries);
   const tip           = getDailyTip();
   const weeklySummary = getWeeklySummary(entries);
+  const scatter       = getLast7DaysScatter(entries);
+  const days28        = getLast28Days(entries);
   const now           = new Date();
   const hour          = now.getHours();
   const greeting      = hour < 12 ? 'おはようございます' : hour < 17 ? 'こんにちは' : 'こんばんは';
@@ -124,6 +195,14 @@ export default function Home({ onNavigate, providerToken = null }) {
   return (
     <div className="screen home-screen">
 
+      {quickRipple && (
+        <div className="ripple-overlay">
+          <div className="ripple-circle r1" />
+          <div className="ripple-circle r2" />
+          <div className="ripple-circle r3" />
+        </div>
+      )}
+
       {/* ヘッダー */}
       <div className="home-header" style={{ background: state.gradient }}>
         <div>
@@ -133,16 +212,28 @@ export default function Home({ onNavigate, providerToken = null }) {
         <div className="header-state-emoji">{state.emoji}</div>
       </div>
 
-      {/* ① 今日の記録ボタン — 最上部・最大サイズ */}
+      {/* ① クイック・チェックイン / 完了バナー */}
       {!todayEntry ? (
-        <button className="cta-btn" onClick={() => onNavigate('checkin')}>
-          <span className="cta-icon">✏️</span>
-          <div className="cta-text">
-            <div className="cta-main">今日の記録をする</div>
-            <div className="cta-sub">1分以内で完了します</div>
+        <div className="card quick-checkin-card">
+          <p className="quick-checkin-label">今の気分は？</p>
+          <div className="quick-checkin-row">
+            {MOOD_OPTIONS.map(o => (
+              <button
+                key={o.value}
+                className={`quick-mood-btn${quickTapped === o.value ? ' tapped' : ''}`}
+                style={{ '--mood-color': o.color }}
+                onClick={() => handleQuickCheckin(o.value)}
+                disabled={quickTapped !== null}
+              >
+                <span className="quick-mood-emoji">{o.emoji}</span>
+                <span className="quick-mood-label">{o.label}</span>
+              </button>
+            ))}
           </div>
-          <span className="cta-arrow">›</span>
-        </button>
+          <button className="quick-detail-link" onClick={() => onNavigate('checkin')}>
+            メモや詳細も記録する →
+          </button>
+        </div>
       ) : (
         <div className="done-banner">
           <span>✅</span>
@@ -224,7 +315,28 @@ export default function Home({ onNavigate, providerToken = null }) {
         </div>
       </div>
 
-      {/* ④ 手紙機能 */}
+      {/* ④ 最近の状態（可視化） */}
+      {entries.length > 0 && (
+        <div className="card">
+          <h2 className="card-section-title">📊 最近の状態</h2>
+          <div className="viz-row">
+            <div className="viz-half">
+              <p className="viz-sub-title">心と体のバランス（7日）</p>
+              {scatter.length === 0 ? (
+                <p className="viz-empty-hint">記録が増えると表示されます</p>
+              ) : (
+                <DotMap scatter={scatter} />
+              )}
+            </div>
+            <div className="viz-half">
+              <p className="viz-sub-title">ここ28日の記録</p>
+              <MindGrid days28={days28} />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ⑤ 手紙機能 */}
       {(['tired', 'stressed', 'burnout'].includes(state.status) && getLetters().length > 0) && (() => {
         const letters = getLetters();
         const letter  = letters[Math.floor(Math.random() * letters.length)];
@@ -264,7 +376,7 @@ export default function Home({ onNavigate, providerToken = null }) {
         )}
       </Collapsible>
 
-      {/* ⑤ 今週のふりかえり */}
+      {/* ⑥ 今週のふりかえり */}
       {weeklySummary && (
         <div className="card">
           <h2 className="card-section-title">📊 今週のふりかえり</h2>
@@ -279,13 +391,13 @@ export default function Home({ onNavigate, providerToken = null }) {
         </div>
       )}
 
-      {/* ⑥ 今日のひとこと */}
+      {/* ⑦ 今日のひとこと */}
       <div className="card">
         <h2 className="card-section-title">✨ 今日のひとこと</h2>
         <p className="tip-body">「{tip}」</p>
       </div>
 
-      {/* ⑦ 深呼吸エクササイズ（折りたたみ） */}
+      {/* ⑧ 深呼吸エクササイズ（折りたたみ） */}
       <Collapsible title="🫁 深呼吸エクササイズ（4-7-8）" helpText="ストレス解消に効果的な4-7-8呼吸法を練習できます。「吸う4秒 → 止める7秒 → 吐く8秒」を3回繰り返すだけで、気持ちが落ち着きます。">
         <p className="card-desc" style={{ marginBottom: 12 }}>
           ストレスを感じたら試してみましょう。吸う4秒→止める7秒→吐く8秒を3回繰り返します。
