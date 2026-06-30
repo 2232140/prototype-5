@@ -94,7 +94,8 @@ export default function Home({ onNavigate, providerToken = null }) {
   const [todayNote, setTodayNote]     = useState('');
   const [letterText, setLetterText]   = useState('');
   const [letterSent, setLetterSent]   = useState(false);
-  const [quickTapped, setQuickTapped] = useState(null);
+  const [quickMood,   setQuickMood]   = useState(null);
+  const [quickEnergy, setQuickEnergy] = useState(null);
   const [quickRipple, setQuickRipple] = useState(false);
 
   useEffect(() => {
@@ -128,15 +129,25 @@ export default function Home({ onNavigate, providerToken = null }) {
     fire();
   }, []);
 
-  const handleQuickCheckin = async (value) => {
-    setQuickTapped(value);
+  const doQuickSave = async (mood, energy) => {
     setQuickRipple(true);
-    await saveEntry({ mood: value, energy: value, memo: '' });
+    await saveEntry({ mood, energy, memo: '' });
     const [newEntry, newEntries] = await Promise.all([getTodayEntry(), getEntries()]);
     setTodayEntry(newEntry);
     setEntries(newEntries);
     setQuickRipple(false);
-    setQuickTapped(null);
+    setQuickMood(null);
+    setQuickEnergy(null);
+  };
+
+  const handleQuickMood = (value) => {
+    setQuickMood(value);
+    if (quickEnergy !== null) doQuickSave(value, quickEnergy);
+  };
+
+  const handleQuickEnergy = (value) => {
+    setQuickEnergy(value);
+    if (quickMood !== null) doQuickSave(quickMood, value);
   };
 
   const state         = analyzeState(entries);
@@ -215,21 +226,42 @@ export default function Home({ onNavigate, providerToken = null }) {
       {/* ① クイック・チェックイン / 完了バナー */}
       {!todayEntry ? (
         <div className="card quick-checkin-card">
-          <p className="quick-checkin-label">今の気分は？</p>
-          <div className="quick-checkin-row">
-            {MOOD_OPTIONS.map(o => (
-              <button
-                key={o.value}
-                className={`quick-mood-btn${quickTapped === o.value ? ' tapped' : ''}`}
-                style={{ '--mood-color': o.color }}
-                onClick={() => handleQuickCheckin(o.value)}
-                disabled={quickTapped !== null}
-              >
-                <span className="quick-mood-emoji">{o.emoji}</span>
-                <span className="quick-mood-label">{o.label}</span>
-              </button>
-            ))}
+          <p className="quick-checkin-label">今日の状態をタップ</p>
+
+          <div className="quick-checkin-section">
+            <span className={`quick-section-label${quickEnergy !== null && quickMood === null ? ' pending' : ''}`}>気分</span>
+            <div className="quick-checkin-row">
+              {MOOD_OPTIONS.map(o => (
+                <button
+                  key={o.value}
+                  className={`quick-mood-btn${quickMood === o.value ? ' selected' : ''}`}
+                  style={{ '--mood-color': o.color }}
+                  onClick={() => handleQuickMood(o.value)}
+                  disabled={quickRipple}
+                >
+                  <span className="quick-mood-emoji">{o.emoji}</span>
+                </button>
+              ))}
+            </div>
           </div>
+
+          <div className="quick-checkin-section">
+            <span className={`quick-section-label${quickMood !== null && quickEnergy === null ? ' pending' : ''}`}>体調</span>
+            <div className="quick-checkin-row">
+              {ENERGY_OPTIONS.map(o => (
+                <button
+                  key={o.value}
+                  className={`quick-mood-btn${quickEnergy === o.value ? ' selected' : ''}`}
+                  style={{ '--mood-color': o.color }}
+                  onClick={() => handleQuickEnergy(o.value)}
+                  disabled={quickRipple}
+                >
+                  <span className="quick-mood-emoji">{o.emoji}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
           <button className="quick-detail-link" onClick={() => onNavigate('checkin')}>
             メモや詳細も記録する →
           </button>
