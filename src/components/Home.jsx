@@ -43,9 +43,10 @@ function QuadrantMap({ scatter }) {
       <div className="quadrant-map">
         {QUAD_INFO.map((q, i) => (
           <div key={i} className="quad" style={{ background: q.bg }}>
-            <span className="quad-label" style={{ color: q.color }}>
-              {q.emoji}<br />{q.label}
-            </span>
+            <div className="quad-label">
+              <span className="quad-emoji">{q.emoji}</span>
+              <span className="quad-name" style={{ color: q.color }}>{q.label}</span>
+            </div>
           </div>
         ))}
         {scatter.map((pt, i) => {
@@ -362,10 +363,13 @@ export default function Home({ onNavigate, providerToken = null }) {
       {/* ④ 最近の状態（可視化） */}
       {entries.length > 0 && (
         <div className="card">
-          <h2 className="card-section-title">📊 最近の状態</h2>
+          <h2 className="card-section-title" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            📊 最近の状態
+            <HelpTooltip text="直近7日間の気分（縦軸）と体調（横軸）の相関を4つのゾーンで表示しています。ドットが多いゾーンほど、その状態でいた日が多かったことを示します。右側の28日グリッドは記録した日を気分の色で表示しています。" />
+          </h2>
           <div className="viz-row">
             <div className="viz-half">
-              <p className="viz-sub-title">心と体のバランス（↑気分 / →体調）</p>
+              <p className="viz-sub-title">心と体のバランス（直近7日）</p>
               <QuadrantMap scatter={scatter} />
             </div>
             <div className="viz-half">
