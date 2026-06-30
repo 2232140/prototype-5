@@ -311,8 +311,6 @@ export default function Home({ onNavigate, providerToken = null }) {
       <div className="card state-card" style={{ borderLeftColor: state.borderColor }}>
         <h2 className="state-title">{state.title}</h2>
         <p className="state-message">{state.message}</p>
-        <div className="divider" />
-        <p className="state-advice">💡 {state.advice}</p>
         <div className="ai-advice-section">
           <div className="divider" />
           <span className="ai-advice-label">
@@ -385,7 +383,28 @@ export default function Home({ onNavigate, providerToken = null }) {
         </div>
       )}
 
-      {/* ⑤ 手紙機能 */}
+      {/* ⑤ 今週のふりかえり */}
+      {weeklySummary && (
+        <div className="card">
+          <h2 className="card-section-title">📊 今週のふりかえり</h2>
+          <ul className="summary-list">
+            {weeklySummary.map((m, i) => (
+              <li key={i} className="summary-item">
+                <span className="summary-icon">{m.icon}</span>
+                <span className="summary-text">{m.text}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* ⑥ 今日のひとこと */}
+      <div className="card">
+        <h2 className="card-section-title">✨ 今日のひとこと</h2>
+        <p className="tip-body">「{tip}」</p>
+      </div>
+
+      {/* ⑦ 手紙読み上げカード（つらい日のみ） */}
       {(['tired', 'stressed', 'burnout'].includes(state.status) && getLetters().length > 0) && (() => {
         const letters = getLetters();
         const letter  = letters[Math.floor(Math.random() * letters.length)];
@@ -400,6 +419,7 @@ export default function Home({ onNavigate, providerToken = null }) {
         );
       })()}
 
+      {/* ⑧ 折りたたみ：未来の自分への手紙 */}
       <Collapsible title="💌 未来の自分への手紙" helpText="調子のいい日に、つらい日の自分へメッセージを書き残しておけます。落ち込んだ日に、過去の自分からの手紙が届きます。">
         {wroteLetterToday() || letterSent ? (
           <p className="letter-sent-msg">✅ 今日の手紙はもう届いています。また明日！</p>
@@ -425,28 +445,7 @@ export default function Home({ onNavigate, providerToken = null }) {
         )}
       </Collapsible>
 
-      {/* ⑥ 今週のふりかえり */}
-      {weeklySummary && (
-        <div className="card">
-          <h2 className="card-section-title">📊 今週のふりかえり</h2>
-          <ul className="summary-list">
-            {weeklySummary.map((m, i) => (
-              <li key={i} className="summary-item">
-                <span className="summary-icon">{m.icon}</span>
-                <span className="summary-text">{m.text}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-
-      {/* ⑦ 今日のひとこと */}
-      <div className="card">
-        <h2 className="card-section-title">✨ 今日のひとこと</h2>
-        <p className="tip-body">「{tip}」</p>
-      </div>
-
-      {/* ⑧ 深呼吸エクササイズ（折りたたみ） */}
+      {/* ⑨ 折りたたみ：深呼吸エクササイズ */}
       <Collapsible title="🫁 深呼吸エクササイズ（4-7-8）" helpText="ストレス解消に効果的な4-7-8呼吸法を練習できます。「吸う4秒 → 止める7秒 → 吐く8秒」を3回繰り返すだけで、気持ちが落ち着きます。">
         <p className="card-desc" style={{ marginBottom: 12 }}>
           ストレスを感じたら試してみましょう。吸う4秒→止める7秒→吐く8秒を3回繰り返します。
