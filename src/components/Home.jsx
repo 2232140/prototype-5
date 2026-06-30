@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   getEntries, getTodayEntry, getSettingsWithDefaults,
-  getLetters, saveLetter, wroteLetterToday, saveEntry, getTodayWeather,
+  getLetters, saveLetter, wroteLetterToday, saveEntry, getTodayWeather, getWeatherStore,
 } from '../utils/storage';
 import {
   analyzeState, getStreak, calculateImprovement, getDailyTip,
   getWeeklySummary, MOOD_OPTIONS, ENERGY_OPTIONS, getLast7DaysScatter,
+  getWeatherAlert, getWeatherCorrelation,
 } from '../utils/analysis';
 import { getAIAdvice } from '../utils/aiAdvice';
 import HelpTooltip from './HelpTooltip';
@@ -148,12 +149,14 @@ export default function Home({ onNavigate, providerToken = null }) {
     if (quickMood !== null) doQuickSave(quickMood, value);
   };
 
-  const state         = analyzeState(entries);
-  const streak        = getStreak(entries);
-  const improve       = calculateImprovement(entries);
-  const tip           = getDailyTip();
-  const weeklySummary = getWeeklySummary(entries);
-  const scatter       = getLast7DaysScatter(entries);
+  const state          = analyzeState(entries);
+  const streak         = getStreak(entries);
+  const improve        = calculateImprovement(entries);
+  const tip            = getDailyTip();
+  const weeklySummary  = getWeeklySummary(entries);
+  const scatter        = getLast7DaysScatter(entries);
+  const weatherAlert   = getWeatherAlert(weather);
+  const weatherCorr    = getWeatherCorrelation(entries, getWeatherStore());
   const now           = new Date();
   const hour          = now.getHours();
   const greeting      = hour < 12 ? 'おはようございます' : hour < 17 ? 'こんにちは' : 'こんばんは';
@@ -288,7 +291,23 @@ export default function Home({ onNavigate, providerToken = null }) {
         </div>
       )}
 
-      {/* ② 状態カード + AIアドバイス */}
+      {/* ② 気象アラートカード（注意すべき日のみ表示） */}
+      {weatherAlert && (
+        <div className={`card weather-alert-card weather-alert-${weatherAlert.level}`}>
+          <div className="weather-alert-header">
+            <span className="weather-alert-icon">{weatherAlert.icon}</span>
+            <span className="weather-alert-title">{weatherAlert.title}</span>
+          </div>
+          <p className="weather-alert-body">{weatherAlert.body}</p>
+          {weatherCorr && (
+            <p className="weather-alert-corr">
+              📊 あなたのデータでは、低気圧の日の体調スコアが平均より {(weatherCorr.normalAvg - weatherCorr.lowAvg).toFixed(1)} 低い傾向があります（{weatherCorr.lowCount}日分のデータより）
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* ③ 状態カード + AIアドバイス */}
       <div className="card state-card" style={{ borderLeftColor: state.borderColor }}>
         <h2 className="state-title">{state.title}</h2>
         <p className="state-message">{state.message}</p>

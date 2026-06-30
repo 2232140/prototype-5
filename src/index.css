@@ -1726,6 +1726,56 @@ button {
   line-height: 1.5;
 }
 
+/* ===== WEATHER ALERT CARD ===== */
+.weather-alert-card { border-left: 4px solid; }
+
+.weather-alert-warning, .weather-alert-danger {
+  background: #FDF4FF;
+  border-color: #9B7FA6;
+}
+.weather-alert-heat {
+  background: #FFFBEB;
+  border-color: #F5A623;
+}
+.weather-alert-cold {
+  background: #EFF6FF;
+  border-color: #64B6AC;
+}
+.weather-alert-rain {
+  background: #F0F9FF;
+  border-color: #7C6FCD;
+}
+
+.weather-alert-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.weather-alert-icon { font-size: 20px; line-height: 1; flex-shrink: 0; }
+
+.weather-alert-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.weather-alert-body {
+  font-size: 13px;
+  color: var(--sub);
+  line-height: 1.7;
+}
+
+.weather-alert-corr {
+  font-size: 11px;
+  color: var(--sub);
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border);
+  line-height: 1.6;
+}
+
 /* ===== WEATHER BADGE ===== */
 .weather-badge {
   display: flex;

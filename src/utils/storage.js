@@ -88,7 +88,7 @@ export const deleteLetter = (id) => {
 // ===== Weather (localStorage, keyed by date) =====
 const WEATHER_KEY = 'kokoro_weather';
 
-const getWeatherStore = () => {
+export const getWeatherStore = () => {
   try { return JSON.parse(localStorage.getItem(WEATHER_KEY) || '{}'); }
   catch { return {}; }
 };

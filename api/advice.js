@@ -17,13 +17,26 @@ export default async function handler(req, res) {
   const score      = Number(moodScore) || 3;
   const hasConcern = Boolean(todayNote?.trim());
 
-  // 天気コンテキスト文字列（気圧が低い場合は追加ヒント）
+  // 天気コンテキスト文字列
+  const isLowPressure = weather && weather.pressure < 1013;
+  const isVeryLow     = weather && weather.pressure < 1005;
+  const isHot         = weather && weather.temp >= 30;
+  const isRainy       = weather && [51,53,55,61,63,65,80,81,82,95,96,99].includes(weather.code);
+
   const weatherCtx = weather
-    ? `【今日の天気】${weather.emoji} ${weather.label} / ${weather.temp}°C / 気圧 ${weather.pressure} hPa${
-        weather.pressure < 1013
-          ? '（低気圧：頭痛・倦怠感が出やすい気象条件です）'
-          : ''
-      }`
+    ? `【今日の天気】${weather.emoji} ${weather.label} / ${weather.temp}°C / 気圧 ${weather.pressure} hPa` +
+      (isVeryLow  ? '（非常に低気圧。強い倦怠感・頭痛・気分低下が起きやすい）' :
+       isLowPressure ? '（低気圧。頭痛・だるさ・気分の波が起きやすい）' :
+       isHot       ? '（高温。熱疲労・集中力低下が起きやすい）' :
+       isRainy     ? '（雨天。気分が沈みやすい）' : '')
+    : null;
+
+  const weatherInstruction = isVeryLow
+    ? '今日は気圧が非常に低く、体調・気分への影響が大きい日です。体調不良の原因が天気にある可能性を必ず一言触れ、無理をしないよう伝えてください。'
+    : isLowPressure
+    ? '今日は低気圧で体調に影響が出やすい日です。気象の影響かもしれないと一言添えてください。'
+    : isHot
+    ? '今日は高温で体が疲れやすい日です。水分補給や休息に触れてください。'
     : null;
 
   let messages;
@@ -66,7 +79,7 @@ export default async function handler(req, res) {
   } else {
     // ── モード2: 気分・体調ベースモード（few-shot） ──
     const weatherHint = weatherCtx
-      ? `\n${weatherCtx}${weather?.pressure < 1013 ? '\n低気圧の影響でだるさや頭痛が出やすい状況です。天気のせいかもしれないと一言添えてください。' : ''}`
+      ? `\n${weatherCtx}${weatherInstruction ? `\n${weatherInstruction}` : ''}`
       : '';
 
     const moodSystemPrompt = score <= 1.5

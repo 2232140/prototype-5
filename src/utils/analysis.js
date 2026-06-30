@@ -224,3 +224,77 @@ export const getWeeklySummary = (entries) => {
 
   return messages.slice(0, 3);
 };
+
+// 雨・嵐系の WMO コード
+const RAIN_CODES = new Set([51,53,55,61,63,65,71,73,75,77,80,81,82,85,86,95,96,99]);
+
+export const getWeatherAlert = (weather) => {
+  if (!weather) return null;
+
+  // 優先度順に判定し、最も重要な1件だけ返す
+  if (weather.pressure < 1005) return {
+    level: 'danger',
+    icon: '🌀',
+    title: '気圧がかなり低い状態です',
+    body: `${weather.pressure} hPa。強い頭痛・倦怠感・気分の落ち込みが起きやすい日です。今日は無理をせず、できる範囲でゆっくり過ごしましょう。`,
+  };
+
+  if (weather.pressure < 1013) return {
+    level: 'warning',
+    icon: '🌧️',
+    title: '低気圧の影響があります',
+    body: `${weather.pressure} hPa。頭痛・だるさ・気分の波が起きやすい状態です。体調の変化は天気のせいかもしれません。`,
+  };
+
+  if (weather.temp >= 30) return {
+    level: 'heat',
+    icon: '🌡️',
+    title: '気温が高めです',
+    body: `${weather.temp}°C。熱中症や疲労感が出やすい日です。こまめな水分補給を心がけましょう。`,
+  };
+
+  if (weather.temp <= 3) return {
+    level: 'cold',
+    icon: '🥶',
+    title: '寒い日です',
+    body: `${weather.temp}°C。体が緊張しやすく、エネルギーを多く消費します。温かく過ごしましょう。`,
+  };
+
+  if (RAIN_CODES.has(weather.code)) return {
+    level: 'rain',
+    icon: '☔',
+    title: '雨の日は気分が落ち込みやすいです',
+    body: '雨天は気分が沈みやすい傾向があります。無理に元気を出そうとせず、今日は自分を労る日にしましょう。',
+  };
+
+  return null; // 通常の天気 → カード表示なし
+};
+
+// 過去の記録と気象データから「低気圧の日の傾向」を分析
+export const getWeatherCorrelation = (entries, weatherStore) => {
+  if (!weatherStore || Object.keys(weatherStore).length === 0) return null;
+
+  const lowScores    = [];
+  const normalScores = [];
+
+  entries.forEach(e => {
+    const w = weatherStore[e.date];
+    if (!w?.pressure) return;
+    const score = (e.mood + e.energy) / 2;
+    if (w.pressure < 1013) lowScores.push(score);
+    else normalScores.push(score);
+  });
+
+  if (lowScores.length < 3 || normalScores.length < 3) return null;
+
+  const avg  = arr => arr.reduce((s, v) => s + v, 0) / arr.length;
+  const diff = avg(normalScores) - avg(lowScores);
+
+  if (diff < 0.3) return null; // 差が小さければ表示しない
+
+  return {
+    lowAvg:   Math.round(avg(lowScores)    * 10) / 10,
+    normalAvg: Math.round(avg(normalScores) * 10) / 10,
+    lowCount: lowScores.length,
+  };
+};
