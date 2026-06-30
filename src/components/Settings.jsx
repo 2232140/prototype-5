@@ -120,6 +120,26 @@ export default function Settings({ user }) {
     }
   };
 
+  const disableNotif = async () => {
+    // プッシュサブスクリプションを解除
+    if (pushSub) {
+      await pushSub.unsubscribe().catch(() => {});
+      setPushSub(null);
+    }
+    // サーバー側のサブスクリプションも削除
+    if (user) {
+      await fetch('/api/unsubscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: user.id }),
+      }).catch(() => {});
+    }
+    set('notificationEnabled', false);
+    saveSettings({ ...s, notificationEnabled: false });
+    setPushMsg('🔕 通知をオフにしました');
+    setTimeout(() => setPushMsg(''), 2500);
+  };
+
   return (
     <div className="screen settings-screen">
       <PageHeader title="設定" subtitle="アプリのカスタマイズ" emoji="⚙️" />
@@ -178,14 +198,23 @@ export default function Settings({ user }) {
           onChange={(e) => set('notificationTime', e.target.value)}
         />
         <div className="notif-block">
-          {perm === 'granted' ? (
-            <div className="notif-ok">
-              <span>✅</span>
-              <span>
-                通知が有効です（{s.notificationTime} に通知します）
-                {pushSub && <span style={{ display: 'block', fontSize: 11, marginTop: 2 }}>バックグラウンド通知対応済み</span>}
-              </span>
-            </div>
+          {perm === 'granted' && s.notificationEnabled ? (
+            <>
+              <div className="notif-ok">
+                <span>✅</span>
+                <span>
+                  通知が有効です（{s.notificationTime} に通知します）
+                  {pushSub && <span style={{ display: 'block', fontSize: 11, marginTop: 2 }}>バックグラウンド通知対応済み</span>}
+                </span>
+              </div>
+              <button className="notif-off-btn" onClick={disableNotif}>
+                🔕 通知をオフにする
+              </button>
+            </>
+          ) : perm === 'granted' && !s.notificationEnabled ? (
+            <button className="notif-request-btn" onClick={requestNotif}>
+              🔔 通知をオンにする
+            </button>
           ) : perm === 'denied' ? (
             <div className="notif-denied">
               <span>🔕</span>
@@ -196,7 +225,11 @@ export default function Settings({ user }) {
               🔔 通知を許可する
             </button>
           )}
-          {pushMsg && <p style={{ fontSize: 12, color: '#166534', marginTop: 8 }}>{pushMsg}</p>}
+          {pushMsg && (
+            <p style={{ fontSize: 12, color: pushMsg.startsWith('🔕') ? '#6B7280' : '#166534', marginTop: 8 }}>
+              {pushMsg}
+            </p>
+          )}
         </div>
       </div>
 

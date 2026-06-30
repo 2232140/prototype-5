@@ -655,6 +655,20 @@ button {
 }
 .notif-request-btn:active { transform: scale(0.97); }
 
+.notif-off-btn {
+  width: 100%;
+  background: none;
+  border: 1.5px solid #D1D5DB;
+  color: var(--sub);
+  border-radius: var(--r-sm);
+  padding: 11px;
+  font-size: 14px;
+  font-weight: 700;
+  margin-top: 10px;
+  transition: all 0.2s;
+}
+.notif-off-btn:active { background: #F3F4F6; }
+
 .privacy-card { background: #F7F9FC; border: 1.5px solid var(--border); box-shadow: none; }
 .privacy-text { font-size: 13px; color: var(--sub); line-height: 1.7; }
 
