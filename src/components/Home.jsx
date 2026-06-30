@@ -76,19 +76,48 @@ function QuadrantMap({ scatter }) {
   );
 }
 
+const WEEK_LABELS = ['4週前', '3週前', '先週', '今週'];
+
 function MindGrid({ days28 }) {
+  const weeks = WEEK_LABELS.map((label, wi) => ({
+    label,
+    days: days28.slice(wi * 7, wi * 7 + 7),
+  }));
+
   return (
-    <div className="mind-grid">
-      {days28.map((day, i) => {
-        const color = day.entry ? MOOD_OPTIONS[Math.round(day.entry.mood) - 1]?.color : null;
-        return (
+    <div className="mind-grid-wrap">
+      {weeks.map((week, wi) => (
+        <div key={wi} className="mind-week-row">
+          <span className="mind-week-label">{week.label}</span>
+          <div className="mind-week-cells">
+            {week.days.map((day, di) => {
+              const color = day.entry
+                ? MOOD_OPTIONS[Math.min(4, Math.max(0, Math.round(day.entry.mood) - 1))]?.color
+                : null;
+              return (
+                <div
+                  key={di}
+                  className={`grid-cell${day.entry ? ' grid-has' : ''}${day.isToday ? ' grid-today' : ''}`}
+                  style={color ? { background: color + '99', borderColor: color } : {}}
+                />
+              );
+            })}
+          </div>
+        </div>
+      ))}
+      <div className="mind-legend">
+        <div className="mind-legend-cell" />
+        <span className="mind-legend-text">未記録</span>
+        <span className="mind-legend-spacer" />
+        {MOOD_OPTIONS.map(o => (
           <div
-            key={i}
-            className={`grid-cell${day.entry ? ' grid-has' : ''}${day.isToday ? ' grid-today' : ''}`}
-            style={color ? { background: color + '99', borderColor: color } : {}}
+            key={o.value}
+            className="mind-legend-cell"
+            style={{ background: o.color + '99', borderColor: o.color }}
           />
-        );
-      })}
+        ))}
+        <span className="mind-legend-text">気分 低→高</span>
+      </div>
     </div>
   );
 }

@@ -1719,21 +1719,68 @@ button {
 }
 
 /* Mind Grid */
-.mind-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
+.mind-grid-wrap { width: 100%; }
+
+.mind-week-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 3px;
+}
+
+.mind-week-label {
+  font-size: 8px;
+  font-weight: 700;
+  color: var(--sub);
+  width: 28px;
+  flex-shrink: 0;
+  text-align: right;
+  letter-spacing: -0.02em;
+}
+
+.mind-week-cells {
+  display: flex;
   gap: 3px;
+  flex: 1;
+  min-width: 0;
 }
 
 .grid-cell {
+  flex: 1;
   aspect-ratio: 1;
   border-radius: 3px;
   border: 1.5px solid var(--border);
   background: #F3F4F6;
+  min-width: 0;
 }
 
 .grid-cell.grid-today {
   box-shadow: 0 0 0 1.5px var(--primary);
+}
+
+.mind-legend {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-top: 6px;
+}
+
+.mind-legend-cell {
+  width: 9px;
+  height: 9px;
+  flex-shrink: 0;
+  border-radius: 2px;
+  border: 1.5px solid var(--border);
+  background: #F3F4F6;
+}
+
+.mind-legend-spacer { flex: 1; }
+
+.mind-legend-text {
+  font-size: 8px;
+  font-weight: 600;
+  color: var(--sub);
+  white-space: nowrap;
 }
 
 .viz-empty-hint {
