@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { saveEntry, getTodayEntry } from '../utils/storage';
+import { saveEntry, getTodayEntry, saveWeather } from '../utils/storage';
 import { MOOD_OPTIONS, ENERGY_OPTIONS } from '../utils/analysis';
+import { getWeather } from '../utils/weather';
 import HelpTooltip from './HelpTooltip';
 
 const MESSAGES = [
@@ -67,6 +68,8 @@ export default function CheckIn({ onNavigate }) {
       }
       setMsg(MESSAGES[Math.floor(Math.random() * MESSAGES.length)]);
     })();
+    // 天気を裏側で取得して保存（失敗しても無視）
+    getWeather().then(saveWeather).catch(() => {});
   }, []);
 
   const submit = () => {

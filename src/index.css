@@ -1711,3 +1711,31 @@ button {
   padding: 14px 0;
   line-height: 1.5;
 }
+
+/* ===== WEATHER BADGE ===== */
+.weather-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 6px;
+  padding: 4px 8px;
+  background: rgba(100, 182, 172, 0.1);
+  border: 1px solid rgba(100, 182, 172, 0.3);
+  border-radius: 20px;
+  width: fit-content;
+}
+
+.weather-emoji { font-size: 14px; line-height: 1; }
+
+.weather-info {
+  font-size: 11px;
+  color: var(--sub);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.weather-low-pressure {
+  color: #E07B7B;
+  font-weight: 700;
+}

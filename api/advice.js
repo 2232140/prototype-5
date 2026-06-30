@@ -9,13 +9,22 @@ export default async function handler(req, res) {
     return res.status(503).json({ error: 'AIアドバイス機能は現在利用できません。' });
   }
 
-  const { stateTitle, recentSummary, moodScore, todayNote } = req.body;
+  const { stateTitle, recentSummary, moodScore, todayNote, weather } = req.body;
   if (!stateTitle) {
     return res.status(400).json({ error: '状態データが不足しています。' });
   }
 
   const score      = Number(moodScore) || 3;
   const hasConcern = Boolean(todayNote?.trim());
+
+  // 天気コンテキスト文字列（気圧が低い場合は追加ヒント）
+  const weatherCtx = weather
+    ? `【今日の天気】${weather.emoji} ${weather.label} / ${weather.temp}°C / 気圧 ${weather.pressure} hPa${
+        weather.pressure < 1013
+          ? '（低気圧：頭痛・倦怠感が出やすい気象条件です）'
+          : ''
+      }`
+    : null;
 
   let messages;
 
@@ -47,10 +56,19 @@ export default async function handler(req, res) {
       { role: 'assistant', content: 'ミスって落ち込むよね、わかるよ。でも気にするってことは真剣にやってた証拠だよ。次に活かせれば大丈夫。' },
 
       // ── 実際のユーザー入力 ──
-      { role: 'user', content: todayNote.trim() },
+      {
+        role: 'user',
+        content: weatherCtx
+          ? `${weatherCtx}\n${todayNote.trim()}`
+          : todayNote.trim(),
+      },
     ];
   } else {
     // ── モード2: 気分・体調ベースモード（few-shot） ──
+    const weatherHint = weatherCtx
+      ? `\n${weatherCtx}${weather?.pressure < 1013 ? '\n低気圧の影響でだるさや頭痛が出やすい状況です。天気のせいかもしれないと一言添えてください。' : ''}`
+      : '';
+
     const moodSystemPrompt = score <= 1.5
       ? 'あなたは「こころの記録」アプリのAIアシスタントです。ユーザーは今とてもつらい状態です。アドバイスは不要で、ただ寄り添う温かい言葉を日本語のみ・100文字以内で返してください。前置き不要。'
       : score <= 2.5
@@ -62,7 +80,7 @@ export default async function handler(req, res) {
       {
         role: 'user',
         content:
-          `【現在の状態】${stateTitle}\n【最近7日間の記録】${recentSummary}\nこのユーザーへの一言をお願いします。`,
+          `【現在の状態】${stateTitle}\n【最近7日間の記録】${recentSummary}${weatherHint}\nこのユーザーへの一言をお願いします。`,
       },
     ];
   }

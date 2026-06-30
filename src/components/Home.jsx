@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
   getEntries, getTodayEntry, getSettingsWithDefaults,
-  getLetters, saveLetter, wroteLetterToday, saveEntry,
+  getLetters, saveLetter, wroteLetterToday, saveEntry, getTodayWeather,
 } from '../utils/storage';
 import {
   analyzeState, getStreak, calculateImprovement, getDailyTip,
@@ -93,12 +93,14 @@ export default function Home({ onNavigate, providerToken = null }) {
   const [quickMood,   setQuickMood]   = useState(null);
   const [quickEnergy, setQuickEnergy] = useState(null);
   const [quickRipple, setQuickRipple] = useState(false);
+  const [weather, setWeather]         = useState(null);
 
   useEffect(() => {
     (async () => {
       setEntries(await getEntries());
       setTodayEntry(await getTodayEntry());
       setSettings(getSettingsWithDefaults());
+      setWeather(getTodayWeather());
     })();
   }, []);
 
@@ -187,7 +189,7 @@ export default function Home({ onNavigate, providerToken = null }) {
     setAiError('');
     setAiAdvice('');
     try {
-      const advice = await getAIAdvice(entries, state, todayNote.trim() || null);
+      const advice = await getAIAdvice(entries, state, todayNote.trim() || null, weather);
       setAiAdvice(advice);
     } catch (e) {
       setAiError(e.message);
@@ -264,12 +266,23 @@ export default function Home({ onNavigate, providerToken = null }) {
       ) : (
         <div className="done-banner">
           <span>✅</span>
-          <div>
+          <div style={{ flex: 1 }}>
             <div className="done-main">今日の記録は完了しています！</div>
             <div className="done-emojis">
               気分 {MOOD_OPTIONS[Math.round(todayEntry.mood) - 1]?.emoji}
               {'　'}体調 {ENERGY_OPTIONS[Math.round(todayEntry.energy) - 1]?.emoji}
             </div>
+            {weather && (
+              <div className="weather-badge">
+                <span className="weather-emoji">{weather.emoji}</span>
+                <span className="weather-info">
+                  {weather.label}　{weather.temp}°C
+                  <span className={weather.pressure < 1013 ? 'weather-low-pressure' : ''}>
+                    {weather.pressure} hPa
+                  </span>
+                </span>
+              </div>
+            )}
           </div>
           <button className="edit-link" onClick={() => onNavigate('checkin')}>修正</button>
         </div>

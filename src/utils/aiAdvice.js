@@ -1,6 +1,6 @@
 const MOOD_LABELS = ['', 'とても悪い', '悪い', '普通', '良い', 'とても良い'];
 
-export const getAIAdvice = async (entries, state, todayNote = null) => {
+export const getAIAdvice = async (entries, state, todayNote = null, weather = null) => {
   const recent = entries.slice(-7);
   const recentSummary = recent.length > 0
     ? recent.map(e =>
@@ -11,7 +11,7 @@ export const getAIAdvice = async (entries, state, todayNote = null) => {
   const res = await fetch('/api/advice', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ stateTitle: state.title, recentSummary, moodScore: state.score ?? 3, todayNote }),
+    body: JSON.stringify({ stateTitle: state.title, recentSummary, moodScore: state.score ?? 3, todayNote, weather }),
   });
 
   const data = await res.json().catch(() => ({}));

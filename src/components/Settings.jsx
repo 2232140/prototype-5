@@ -40,20 +40,46 @@ function UsageGuide() {
   );
 }
 
+// VAPIDの公開鍵（公開情報なのでハードコードで問題ない）
+const VAPID_PUBLIC_KEY = 'BFMksJnUWOcS7O3-gGWR_cVFAp9QIVtQREpFCVlj_YeYkNNzgluP_d_P3gTnsQQyym4Db6BFiBkUuHZdQEmbW_0';
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64  = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw     = atob(base64);
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)));
+}
+
 export default function Settings({ user }) {
-  const [s, setS]       = useState({ name: '', notificationTime: '21:00', notificationEnabled: false });
-  const [saved, setSaved] = useState(false);
-  const [perm, setPerm]   = useState('default');
+  const [s, setS]           = useState({ name: '', notificationTime: '21:00', notificationEnabled: false });
+  const [saved, setSaved]   = useState(false);
+  const [perm, setPerm]     = useState('default');
+  const [pushSub, setPushSub] = useState(null);
+  const [pushMsg, setPushMsg] = useState('');
 
   useEffect(() => {
     setS(getSettingsWithDefaults());
     if ('Notification' in window) setPerm(Notification.permission);
+    // 既存のプッシュサブスクリプションを確認
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.ready.then(reg => {
+        reg.pushManager.getSubscription().then(sub => setPushSub(sub));
+      }).catch(() => {});
+    }
   }, []);
 
   const set = (key, val) => setS((prev) => ({ ...prev, [key]: val }));
 
-  const handleSave = () => {
+  const handleSave = async () => {
     saveSettings(s);
+    // 通知時刻が変わった場合はサーバー側も更新
+    if (pushSub && user) {
+      await fetch('/api/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ subscription: pushSub.toJSON(), notificationTime: s.notificationTime, userId: user.id }),
+      }).catch(() => {});
+    }
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   };
@@ -65,11 +91,32 @@ export default function Settings({ user }) {
     }
     const result = await Notification.requestPermission();
     setPerm(result);
-    if (result === 'granted') {
-      set('notificationEnabled', true);
-      new Notification('こころの記録 🌱', {
-        body: '通知が設定されました！毎日の記録を続けましょう。',
-      });
+    if (result !== 'granted') return;
+
+    set('notificationEnabled', true);
+
+    // プッシュサブスクリプションを取得してサーバーに登録
+    if ('serviceWorker' in navigator && user) {
+      try {
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly:      true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
+        });
+        setPushSub(sub);
+        const res = await fetch('/api/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subscription: sub.toJSON(), notificationTime: s.notificationTime, userId: user.id }),
+        });
+        setPushMsg(res.ok ? '✅ バックグラウンド通知が有効になりました！' : '⚠️ 登録に失敗しました');
+      } catch {
+        // フォールバック: ブラウザ通知のみ
+        new Notification('こころの記録 🌱', { body: '通知が設定されました！' });
+        setPushMsg('✅ ブラウザ通知が有効になりました');
+      }
+    } else {
+      new Notification('こころの記録 🌱', { body: '通知が設定されました！' });
     }
   };
 
@@ -121,7 +168,7 @@ export default function Settings({ user }) {
       <div className="card">
         <h2 className="card-section-title" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           🔔 リマインダー
-          <HelpTooltip text="指定した時刻に記録を促す通知を受け取れます。アプリを開いているときだけ通知されます。まず「通知を許可する」を押してください。" />
+          <HelpTooltip text="指定した時刻にアプリを閉じていても通知を受け取れます。まず「通知を許可する」を押してください。通知時刻を変えた場合は「設定を保存する」も押してください。" />
         </h2>
         <label className="form-label">通知時刻</label>
         <input
@@ -134,7 +181,10 @@ export default function Settings({ user }) {
           {perm === 'granted' ? (
             <div className="notif-ok">
               <span>✅</span>
-              <span>通知が有効です（アプリを開いているとき {s.notificationTime} に通知します）</span>
+              <span>
+                通知が有効です（{s.notificationTime} に通知します）
+                {pushSub && <span style={{ display: 'block', fontSize: 11, marginTop: 2 }}>バックグラウンド通知対応済み</span>}
+              </span>
             </div>
           ) : perm === 'denied' ? (
             <div className="notif-denied">
@@ -146,6 +196,7 @@ export default function Settings({ user }) {
               🔔 通知を許可する
             </button>
           )}
+          {pushMsg && <p style={{ fontSize: 12, color: '#166534', marginTop: 8 }}>{pushMsg}</p>}
         </div>
       </div>
 

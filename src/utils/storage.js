@@ -84,3 +84,23 @@ export const deleteLetter = (id) => {
   const letters = getLetters().filter(l => l.id !== id);
   localStorage.setItem('kokoro_letters', JSON.stringify(letters));
 };
+
+// ===== Weather (localStorage, keyed by date) =====
+const WEATHER_KEY = 'kokoro_weather';
+
+const getWeatherStore = () => {
+  try { return JSON.parse(localStorage.getItem(WEATHER_KEY) || '{}'); }
+  catch { return {}; }
+};
+
+export const saveWeather = (data) => {
+  const date  = new Date().toLocaleDateString('en-CA');
+  const store = getWeatherStore();
+  store[date] = { ...data, savedAt: new Date().toISOString() };
+  localStorage.setItem(WEATHER_KEY, JSON.stringify(store));
+};
+
+export const getTodayWeather = () => {
+  const date = new Date().toLocaleDateString('en-CA');
+  return getWeatherStore()[date] ?? null;
+};
